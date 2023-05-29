@@ -10,7 +10,7 @@ def server_program():
 
     print("host name: " + str(host))
     recv_port = int(input("recv_port: "))
-    server_location = str(input("domain name or ip address of the server: "))
+    # server_location = str(input("domain name or ip address of the server: "))
     # port = int (input("This is the port to connect to the server on , should be clients port: "))
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # get instance
     # server_addr = (server_location, port)
@@ -30,6 +30,7 @@ def server_program():
         ]
         for line in data:
             if line["transactTime"] == str(time):
+                print(f"type : {type(line)} and line : {line}")
                 info = str(line)
                 break
 

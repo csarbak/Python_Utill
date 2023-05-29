@@ -1,8 +1,9 @@
 import socket
 import json
 
-TEXT_FILE = "Sql_Python/nasdaqtraded_230510141735.txt"
+TEXT_FILE = "../Sql_Python/nasdaqtraded_230512105005.txt"
 SERVER_IP = socket.gethostname()
+PORT = 5000
 
 
 def load_server_program(dic, port, ccfile):
@@ -17,12 +18,27 @@ def load_server_program(dic, port, ccfile):
     server_socket.listen(4)
     conn, address = server_socket.accept()  # accept new connection
     print("Connection from: " + str(address))
+    outputType = "txt"
     while True:
         # receive data stream. it won't accept data packet greater than 1024 bytes
 
         symbol = conn.recv(1024).decode()
+        print(f"symbol: {symbol}")
+
         if not symbol or symbol == "bye":
             break
+        symbol = str(symbol)
+
+        if symbol == "CME" or symbol == "NASDAQ" or symbol == "NYSE":
+            ex_name = str(symbol)
+            conn.send(ex_name.encode())  # send data to the client
+
+            continue
+
+        if symbol == "txt" or symbol == "json":
+            outputType = str(symbol)
+            conn.send(outputType.encode())  # send data to the client
+            continue
 
         ccfile.seek(0)
         notFound = True
@@ -36,10 +52,16 @@ def load_server_program(dic, port, ccfile):
                     i += 1
                 break
 
-        if notFound == False:
-            info = json.dumps(dic)  # data serialized
+        if outputType == "json":
+            if notFound == False:
+                info = json.dumps(dic)  # data serialized
+            else:
+                info = json.dumps({})
         else:
-            info = json.dumps({})
+            if notFound == False:
+                info = str(dic)  # data serialized
+            else:
+                info = "Empty please try again"
 
         conn.send(info.encode())  # send data to the client
 
@@ -58,7 +80,7 @@ def init_server(fileObject):
 
 if __name__ == "__main__":
     ccfile = open(TEXT_FILE, "r")
-    port = int(input("enter port: "))
+    # port = int(input("enter port: "))
     dic = init_server(ccfile)
-    load_server_program(dic, port, ccfile)
+    load_server_program(dic, PORT, ccfile)
     ccfile.close

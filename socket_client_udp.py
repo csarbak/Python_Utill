@@ -11,13 +11,11 @@ def client_program():
     except socket.error as e:
         print("Error creating socket: %s" % e)
         sys.exit(1)
-    foregn_ip = input(
-        " This is the domain name or ip address of the server? "
-    )  # take input
+    # foregn_ip = input(" This is the domain name or ip address of the server? ")  # take input
     foregn_port = int(input("foregn_port? "))
-    local_port = int(input("local port? "))
+    # local_port = int(input("local port? "))
     server_addr = (SERVER_IP, foregn_port)
-    client_socket.bind(("", local_port))
+    # client_socket.bind(("", local_port))
 
     print("\nType 'bye' to end \n")
 
@@ -43,6 +41,12 @@ def client_program():
         message = input(" time again: ?\n ")  # again take input
 
     client_socket.close()  # close the connection
+
+    try:
+        client_socket.sendto(message.encode("utf-8"), server_addr)  # send message
+    except socket.error as e:
+        print("Error sending data: %s" % e)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

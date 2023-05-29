@@ -1,8 +1,9 @@
 import socket
 import json
 
-TEXT_FILE = "Sql_Python/nasdaqtraded_230510141735.txt"
+TEXT_FILE = "../Sql_Python/nasdaqtraded_230510141735.txt"
 SERVER_IP = socket.gethostname()
+RECV_PORT = 5000
 
 
 def load_server_program(dic, ccfile):
@@ -10,9 +11,9 @@ def load_server_program(dic, ccfile):
     host = SERVER_IP
 
     print("host name: " + str(host))
-    recv_port = int(input("recv_port: "))
+    # recv_port = int(input("recv_port: "))
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # get instance
-    server_socket.bind(("", recv_port))
+    server_socket.bind(("", RECV_PORT))
 
     while True:
         info = ""
@@ -22,6 +23,17 @@ def load_server_program(dic, ccfile):
 
         if not symbol or symbol == "bye":
             break
+
+        if symbol == "CME" or symbol == "NASDAQ" or symbol == "NYSE":
+            ex_name = str(symbol)
+            server_socket.sendto(ex_name.encode("utf-8"), bytesAddressPair[1])
+
+            continue
+
+        if symbol == "txt" or symbol == "json":
+            outputType = str(symbol)
+            server_socket.sendto(outputType.encode("utf-8"), bytesAddressPair[1])
+            continue
 
         ccfile.seek(0)
         notFound = True
@@ -35,10 +47,16 @@ def load_server_program(dic, ccfile):
                     i += 1
                 break
 
-        if notFound == False:
-            info = json.dumps(dic)  # data serialized
+        if outputType == "json":
+            if notFound == False:
+                info = json.dumps(dic)  # data serialized
+            else:
+                info = json.dumps({})
         else:
-            info = json.dumps({})
+            if notFound == False:
+                info = str(dic)  # data serialized
+            else:
+                info = "Empty please try again"
 
         server_socket.sendto(
             info.encode("utf-8"), bytesAddressPair[1]
